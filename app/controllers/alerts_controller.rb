@@ -4,6 +4,7 @@ class AlertsController < ApplicationController
   # GET /alerts or /alerts.json
   def index
     @alerts = Alert.all
+    render json: @alerts
   end
 
   # GET /alerts/1 or /alerts/1.json
