@@ -70,7 +70,6 @@ export default {
       {
         text: "Nombre",
         align: "left",
-        sortable: false,
         value: "name"
       },
       { text: "Ciudad de Origen", value: "departure_city_name" },
@@ -131,7 +130,7 @@ export default {
 
     async initialize() {
     return axios
-      .get("http://localhost:3000/alerts")
+      .get("http://localhost:3000/api/alerts")
       .then(response => {
         let alerts = response.data.map(item => {
           let temp = Object.assign({}, item);
@@ -147,7 +146,7 @@ export default {
 
     async getCities() {
     return axios
-      .get("http://localhost:3000/cities")
+      .get("http://localhost:3000/api/cities")
       .then(response => {
         this.cities = response.data.cities;
       })
@@ -168,7 +167,7 @@ export default {
     save(item) {
       if (this.editedIndex > -1) {
         axios
-        .put(`http://localhost:3000/alerts/${item.id}`, {
+        .put(`http://localhost:3000/api/alerts/${item.id}`, {
           name: this.editedItem.name,
           departure_city_name: this.editedItem.departure_city.name,
           departure_city_url_name: this.editedItem.departure_city.url_name,
@@ -188,7 +187,7 @@ export default {
       } 
       else {
         axios
-          .post(`http://localhost:3000/alerts/`, {
+          .post(`http://localhost:3000/api/alerts/`, {
             name: this.editedItem.name,
             departure_city_name: this.editedItem.departure_city.name,
             departure_city_url_name: this.editedItem.departure_city.url_name,
@@ -211,7 +210,7 @@ export default {
     deleteItem(item) {
       confirm("Are you sure you want to delete this item?"); 
       axios
-        .delete(`http://localhost:3000/alerts/${item.id}`)
+        .delete(`http://localhost:3000/api/alerts/${item.id}`)
         .then(response => {
           alert(response.data.json);
           this.initialize();

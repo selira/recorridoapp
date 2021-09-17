@@ -1,8 +1,8 @@
 <template>
-  <div id="app">
+  <div>
     <v-app>
       <!-- <p>{{ message }}</p> -->
-      <alerts/>
+      <router-view></router-view>
     </v-app>
   </div>
 </template>
@@ -10,6 +10,7 @@
 
 <script>
 import alerts from "./packs/components/alerts.vue";
+import bus_travels from "./packs/components/bus_travels.vue";
 
 export default {
   data: function () {
@@ -17,9 +18,10 @@ export default {
       message: "Hello Vue!"
     }
   },
-  components: {
-    alerts: alerts
-  }
+  // components: {
+  //   alerts: alerts,
+  //   bus_travels: bus_travels
+  // }
 }
 </script>
 

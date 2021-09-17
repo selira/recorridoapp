@@ -9,12 +9,24 @@ import Vue from 'vue'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import App from '../app.vue'
+import VueRouter from 'vue-router'
 
+import alerts from "./components/alerts.vue";
+import bus_travels from "./components/bus_travels.vue";
+
+
+Vue.use(VueRouter)
 Vue.use(Vuetify)
+
+const routes = [
+  {path: '/', component: alerts},
+  {path: '/bus_travels/:alert_id', component: bus_travels}
+];
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     vuetify: new Vuetify(),
+    router: new VueRouter({routes}),
     render: h => h(App)
   }).$mount()
   document.body.appendChild(app.$el)

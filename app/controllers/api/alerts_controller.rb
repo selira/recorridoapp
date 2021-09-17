@@ -1,10 +1,10 @@
 require 'http'
 
-class AlertsController < ApplicationController
+class Api::AlertsController < ApplicationController
 
   # GET /alerts or /alerts.json
   def index
-    @alerts = Alert.all
+    @alerts = Alert.all.order('id DESC')
     render json: @alerts
   end
 
