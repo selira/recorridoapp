@@ -2,10 +2,10 @@
   <v-data-table :headers="headers" :items="alerts" class="elevation-1">
     <template v-slot:top>
       <v-toolbar flat color="white">
-        <v-toolbar-title>Recorrido CRUD</v-toolbar-title>
+        <v-toolbar-title>recorridoApp</v-toolbar-title>
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
-        <v-dialog v-model="dialog" max-width="500px">
+        <v-dialog v-model="dialog" max-width="900px">
           <template v-slot:activator="{ on }">
             <v-btn color="primary" dark class="mb-2" v-on="on">Nueva Alerta</v-btn>
           </template>
@@ -21,16 +21,21 @@
                     <v-text-field v-model="editedItem.name" label="Nombre Alerta"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.origin" label="Ciudad de Origen"></v-text-field>
+                    <!-- <v-text-field v-model="editedItem.origin" label="Ciudad de Origen"></v-text-field> -->
+                    <v-autocomplete :items="cities" v-model="editedItem.departure_city"
+                     color="white" item-text="name" label="Ciudad de Origen" return-object>
+                     </v-autocomplete>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.destination" label="Ciudad de Destino"></v-text-field>
+                    <v-autocomplete :items="cities" v-model="editedItem.destination_city"
+                     color="white" item-text="name" label="Ciudad de Destino" return-object></v-autocomplete>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
                     <v-text-field v-model="editedItem.price" label="Precio"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.bus_category" label="Clase"></v-text-field>
+                    <v-autocomplete :items="bus_categories" v-model="editedItem.bus_category"
+                     color="white" item-text="name" label="Clase" return-object></v-autocomplete>
                   </v-col>
                 </v-row>
               </v-container>
@@ -68,27 +73,35 @@ export default {
         sortable: false,
         value: "name"
       },
-      { text: "Ciudad de Origen", value: "origin" },
-      { text: "Ciudad de Destino", value: "destination" },
+      { text: "Ciudad de Origen", value: "departure_city_name" },
+      { text: "Ciudad de Destino", value: "destination_city_name" },
       { text: "Clase", value: "bus_category" },
       { text: "Precio", value: "price" },
       { text: "Actions", value: "action", sortable: false }
     ],
+    bus_categories: [
+      {id: 0, name: 'Cualquiera'},
+      {id: 1, name: 'Premium'},
+      {id: 2, name: 'Salón Cama'},
+      {id: 3, name: 'Semi Cama'},
+      {id: 4, name: 'Pullman'},
+      ],
     alerts: [],
+    cities: [],
     editedIndex: -1,
     editedItem: {
-      name: "",
-      origin: "",
-      destination: "",
-      bus_category: "",
-      price: ""
+      name: "Nueva Alerta",
+      departure_city: {},
+      destination_city: {},
+      bus_category: {id: 0, name: 'Cualquiera'},
+      price: 0
     },
     defaultItem: {
-      name: "",
-      origin: "",
-      destination: "",
-      bus_category: "",
-      price: ""
+      name: "Nueva Alerta",
+      departure_city: {},
+      destination_city: {},
+      bus_category: {id: 0, name: 'Cualquiera'},
+      price: 0
     }
   }),
   computed: {
@@ -103,6 +116,8 @@ export default {
   },
   created() {
     this.initialize();
+    this.getCities();
+    
   },
   methods: {
   
@@ -114,17 +129,97 @@ export default {
       }, 300);
     },
 
-    initialize() {
+    async initialize() {
     return axios
       .get("http://localhost:3000/alerts")
       .then(response => {
-        console.log(response.data);
-        this.alerts = response.data;
+        let alerts = response.data.map(item => {
+          let temp = Object.assign({}, item);
+          temp.bus_category = this.bus_categories[item.bus_category].name;
+          return temp;
+        });
+        this.alerts = alerts;
       })
       .catch(e => {
         console.log(e);
       });
-    }
+    },
+
+    async getCities() {
+    return axios
+      .get("http://localhost:3000/cities")
+      .then(response => {
+        this.cities = response.data.cities;
+      })
+      .catch(e => {
+        console.log(e);
+      });
+    },
+
+    editItem(item) {
+      this.editedIndex = item.id;
+      this.editedItem = Object.assign({}, item);
+      this.editedItem.destination_city = {name: item.destination_city_name}
+      this.editedItem.departure_city = {name: item.departure_city_name}
+      // this.editedItem.bus_category = this.bus_categories[item.bus_category].name
+      this.dialog = true;
+    },
+
+    save(item) {
+      if (this.editedIndex > -1) {
+        axios
+        .put(`http://localhost:3000/alerts/${item.id}`, {
+          name: this.editedItem.name,
+          departure_city_name: this.editedItem.departure_city.name,
+          departure_city_url_name: this.editedItem.departure_city.url_name,
+          departure_city_id: this.editedItem.departure_city.id,
+          destination_city_name: this.editedItem.destination_city.name,
+          destination_city_url_name: this.editedItem.destination_city.url_name,
+          destination_city_id: this.editedItem.destination_city.id,
+          bus_category: this.editedItem.bus_category.id,
+          price: this.editedItem.price,
+        })
+        .then(response => {
+          this.initialize();
+        })
+        .catch(error => {
+          console.log(error);
+        });
+      } 
+      else {
+        axios
+          .post(`http://localhost:3000/alerts/`, {
+            name: this.editedItem.name,
+            departure_city_name: this.editedItem.departure_city.name,
+            departure_city_url_name: this.editedItem.departure_city.url_name,
+            departure_city_id: this.editedItem.departure_city.id,
+            destination_city_name: this.editedItem.destination_city.name,
+            destination_city_url_name: this.editedItem.destination_city.url_name,
+            destination_city_id: this.editedItem.destination_city.id,
+            bus_category: this.editedItem.bus_category.id,
+            price: this.editedItem.price,
+          })
+          .then(response => {
+            this.initialize();
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
+      this.close();
+    },
+    deleteItem(item) {
+      confirm("Are you sure you want to delete this item?"); 
+      axios
+        .delete(`http://localhost:3000/alerts/${item.id}`)
+        .then(response => {
+          alert(response.data.json);
+          this.initialize();
+        })
+        .catch(error => {
+          console.log(error);
+        });
+}
   }
 
 };

@@ -10,19 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_09_15_161822) do
+ActiveRecord::Schema.define(version: 2021_09_16_155726) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "alerts", force: :cascade do |t|
     t.string "name"
-    t.string "origin"
-    t.string "destination"
+    t.string "departure_city_name"
+    t.string "destination_city_name"
     t.integer "price"
     t.integer "bus_category"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "departure_city_url_name"
+    t.integer "departure_city_id"
+    t.string "destination_city_url_name"
+    t.integer "destination_city_id"
   end
 
 end
