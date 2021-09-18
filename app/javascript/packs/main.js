@@ -13,6 +13,11 @@ import VueRouter from 'vue-router'
 
 import alerts from "./components/alerts.vue";
 import bus_travels from "./components/bus_travels.vue";
+import mdiVue from 'mdi-vue/v2'
+import * as mdijs from '@mdi/js'
+Vue.use(mdiVue, {
+  icons: mdijs
+})
 
 
 Vue.use(VueRouter)
@@ -26,7 +31,7 @@ const routes = [
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     vuetify: new Vuetify(),
-    router: new VueRouter({routes}),
+    router: new VueRouter({routes, mode: 'history'}),
     render: h => h(App)
   }).$mount()
   document.body.appendChild(app.$el)

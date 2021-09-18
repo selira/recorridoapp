@@ -52,7 +52,8 @@
     </template>
     <template v-slot:[`item.action`]="{ item }">
       <v-icon small class="mr-2" @click="editItem(item)">edit</v-icon>
-      <v-icon small @click="deleteItem(item)">Borrar</v-icon>
+      <v-icon small class="mr-2" @click="deleteItem(item)">delete</v-icon>
+      <v-icon small @click="showBusTravel(item)">fa-eye</v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -67,11 +68,7 @@ export default {
   data: () => ({
     dialog: false,
     headers: [
-      {
-        text: "Nombre",
-        align: "left",
-        value: "name"
-      },
+      { text: "Nombre", align: "left", value: "name"},
       { text: "Ciudad de Origen", value: "departure_city_name" },
       { text: "Ciudad de Destino", value: "destination_city_name" },
       { text: "Clase", value: "bus_category" },
@@ -84,7 +81,7 @@ export default {
       {id: 2, name: 'Salón Cama'},
       {id: 3, name: 'Semi Cama'},
       {id: 4, name: 'Pullman'},
-      ],
+    ],
     alerts: [],
     cities: [],
     editedIndex: -1,
@@ -106,6 +103,9 @@ export default {
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? "Nueva Alerta" : "Editar Alerta";
+    },
+    busTravelLink(item){
+      return "http://localhost:3000/#/bus_travels/" + item.id
     }
   },
   watch: {
@@ -208,7 +208,8 @@ export default {
       this.close();
     },
     deleteItem(item) {
-      confirm("Are you sure you want to delete this item?"); 
+      var r = confirm("Are you sure you want to delete this item?");
+      if (r == true) {
       axios
         .delete(`http://localhost:3000/api/alerts/${item.id}`)
         .then(response => {
@@ -218,7 +219,12 @@ export default {
         .catch(error => {
           console.log(error);
         });
-}
+      }
+    
+    },
+    showBusTravel(item){
+      this.$router.push({ path: `bus_travels/${item.id}`});
+    }
   }
 
 };

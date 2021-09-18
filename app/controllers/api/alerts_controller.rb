@@ -8,8 +8,9 @@ class Api::AlertsController < ApplicationController
     render json: @alerts
   end
 
-  # GET /alerts/1 or /alerts/1.json
   def show
+    @alert = Alert.find(params[:id])
+    render json: @alert
   end
 
   def cities
@@ -17,15 +18,6 @@ class Api::AlertsController < ApplicationController
       .headers(:accept => "application/json")
       .get("https://demo.recorrido.cl/api/v2/es/cities.json?country=chile").body.to_s
     render json: @cities
-  end
-
-  # GET /alerts/new
-  def new
-    @alert = Alert.new
-  end
-
-  # GET /alerts/1/edit
-  def edit
   end
 
   # POST /alerts or /alerts.json
