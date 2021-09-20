@@ -2,12 +2,20 @@ require 'http'
 
 class Api::BusTravelsController < ApplicationController
 
-  def update
+  def update(alert_id = -1)
     #considerando que se hacen 7 request que se pueden demorar hasta 10 segundos o más,
-    # este  método puede tomar un tiempo largo
+    #este método puede tomar un tiempo largo
+    #updates bus_travels from alert for next 7 days, and price history as well. Doesn't return anything
 
-    alert_id = params[:alert_id]
-    alert = Alert.find(alert_id)
+    if alert_id == -1
+      alert_id = params[:alert_id]
+    end
+
+    #alert = Alert.find_by(id: alert_id) #(includes bus_travelas?)
+    alert = Alert.includes(:bus_travels).find_by(id: alert_id)
+    if alert.nil?
+      render json: {error: 'alert not found'}
+    end
     departure_city_id = alert[:departure_city_id]
     destination_city_id = alert[:destination_city_id]
     bus_category = alert[:bus_category]
@@ -26,7 +34,7 @@ class Api::BusTravelsController < ApplicationController
           res2 = data_fetch_request(search_id)
           if res2.status.success?
             bus_travel_data = res2.parse['outbound']['search_results']
-            travels_result.push(get_lowest_price(bus_travel_data, bus_category, d.strftime('%d-%m-%Y')))
+            travels_result.push(get_lowest_price(bus_travel_data, bus_category, d.strftime('%d-%m-%Y'), alert))
           else
             puts res2
           end
@@ -38,7 +46,58 @@ class Api::BusTravelsController < ApplicationController
       end
       d += 1
     end
+    # puts 'putting travels result in end of update method'
+    # puts travels_result
+    save_lowest_price(travels_result, alert_id)
+
+    #TODO: COMMENT THIS LINE AFTER FINISHING
     render json: travels_result
+    #alternative:
+    #index()
+
+  end
+
+  def index
+    #returns information from next 7 days
+    alert_id = params[:alert_id]
+    alert = Alert.includes(:bus_travels).find_by(id: alert_id)
+    d = Date.today
+    bus_travels = []
+    (1..7).each do |n|
+      date_search = d.strftime('%d-%m-%Y')
+      bt = alert.bus_travels.find_by(date: date_search)
+      unless bt.nil?
+        bus_travels.push(bt.attributes)
+      end
+      d += 1
+    end
+    if bus_travels.empty?
+      #update with worker, not from this method
+      update(alert_id)
+      #render json: {info: 'tried to update info'}
+    else
+      render json: bus_travels
+    end
+
+  end
+
+  def history
+    #send historic price information
+    #format: [{date: 01-01-2050, price: 8000}, ...]
+    alert_id = params[:alert_id]
+    alert = Alert.includes(:price_histories).find_by(id: alert_id)
+    if alert.nil?
+      render json: {error: 'no alert'}
+    end
+    p_history = alert.price_histories.order('created_at DESC').limit(50)
+    result = []
+    p_history.each do |p|
+      a = p.attributes
+      a['time'] = a['created_at'].strftime("%H:%M")
+      result.push(a)
+    end
+    render json: result.reverse
+
   end
 
   private
@@ -74,18 +133,59 @@ class Api::BusTravelsController < ApplicationController
           .get(data_url)
     end
 
-    def get_lowest_price(bus_travel_data, bus_category, date)
+    def get_lowest_price(bus_travel_data, bus_category, date, alert)
+      #returns the bus_travel with lowest price of alert with date and bus_category
+      #also saves the bus_travel to database
       lowest_price = 999999.9 #aqui asumimos que habran tickets con precios más bajos que esto jaja
-      bus_travel = {}
+      bus_travel = alert.bus_travels.find_by(date: date)
+      bus_copy = bus_travel
+      new_bus_travel_found = false
+      if bus_travel.nil?
+        bus_travel = {}
+      else
+        lowest_price = bus_travel['price']
+        bus_travel = bus_travel.attributes
+      end
       bus_travel_data.each do |data_point|
         if lowest_price > data_point['price'] && (bus_category == 0 || bus_category == data_point['seat_klass_stars'] )
           lowest_price = data_point['price']
           bus_travel = {date: date, time: data_point['departure_time'].to_datetime.strftime("%H:%M"),
               bus_category: data_point['seat_klass_stars'], price: data_point['price'],
               company: data_point['bus_operator_name']}
+          new_bus_travel_found = true
+        end
+      end
+      unless bus_travel.empty?  || new_bus_travel_found == false 
+        #saved only if there is data to show and found new bus_travel
+        bt = BusTravel.new(bus_travel)
+        bt.alert_id = alert.id
+        unless bus_copy.nil? #must delete original bus_travel before save to update, only one bus_travel per date and alert
+          bus_copy.delete
+        end
+        unless bt.save
+          puts 'bus travel not saved to database'
         end
       end
       return bus_travel
+    end
+
+    def save_lowest_price(travels_result, alert_id)
+      lowest_price = 999999.9
+      travels_result.each do |tr|
+        unless tr.empty?
+          if lowest_price > tr['price'].to_i
+            lowest_price = tr['price'].to_i
+          end
+        end
+      end
+      unless lowest_price == 999999.9
+        pr = PriceHistory.new()
+        pr.alert_id = alert_id
+        pr.price = lowest_price
+        unless pr.save
+          puts 'error saving price history'
+        end
+      end
     end
 
 end

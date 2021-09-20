@@ -31,7 +31,7 @@ const routes = [
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
     vuetify: new Vuetify(),
-    router: new VueRouter({routes, mode: 'history'}),
+    router: new VueRouter({routes}),
     render: h => h(App)
   }).$mount()
   document.body.appendChild(app.$el)

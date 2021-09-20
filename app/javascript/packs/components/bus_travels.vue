@@ -1,12 +1,12 @@
 <template>
 <div>
-  <h2>{{alert.name}}</h2>
-  <h4>Origen: {{alert.departure_city_name}}</h4>
-  <h4>Destino: {{alert.destination_city_name}}</h4>
-  <h4>Precio: {{alert.price}}</h4>
-  <h4>Clase: {{alert.bus_category}}</h4>
+  <h1>{{alert.name}}</h1>
+  <h3>Origen: {{alert.departure_city_name}}</h3>
+  <h3>Destino: {{alert.destination_city_name}}</h3>
+  <h3>Precio: {{alert.price}}</h3>
+  <h3>Clase: {{bus_categories[alert.bus_category].name}}</h3>
   <router-link to="/">
-    <v-icon>back</v-icon>
+    <v-icon small class="mr-2" @click="goBack()">fa-arrow-left</v-icon>
   </router-link>
   <v-card
     class="mt-4 mx-auto"
@@ -48,13 +48,19 @@
   <v-data-table
     dense
     :headers="headers"
-    :items="desserts"
+    :items="bus_travels"
     hide-default-footer
     item-key="name"
     class="elevation-1"
-    loading
+    :loading = "loadTable"
     loading-text="Loading... Please wait"
-  ></v-data-table>
+    :item-class="itemRowBackground"
+  >
+  <template #item.date="{ item }">
+    <a target="_blank" :href="item.link">
+      {{ item.date }}
+    </a>
+  </template></v-data-table>
 </template>
 </div>
 </template>
@@ -70,6 +76,9 @@ export default {
       bus_category: {id: 0, name: 'Cualquiera'},
       price: 0
     },
+    bus_travels: [],
+    price_history: [],
+    loadTable: true,
     bus_categories: [
       {id: 0, name: 'Cualquiera'},
       {id: 1, name: 'Premium'},
@@ -94,49 +103,25 @@ export default {
       250,
       240,
     ],
-    desserts: [
-        {
-          name: 'Frozen Yogurt',
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: '1%',
-        },
-        {
-          name: 'Ice cream sandwich',
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-          iron: '1%',
-        },
-        {
-          name: 'Eclair',
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-          iron: '7%',
-        }],
     headers: [
         {
-          text: 'Dessert (100g serving)',
+          text: 'Fecha',
           align: 'start',
           sortable: false,
-          value: 'name',
+          value: 'date',
         },
-        { text: 'Calories', value: 'calories' },
-        { text: 'Fat (g)', value: 'fat' },
-        { text: 'Carbs (g)', value: 'carbs' },
-        { text: 'Protein (g)', value: 'protein' },
-        { text: 'Iron (%)', value: 'iron' },
+        { text: 'Horario', value: 'time', sortable: false, },
+        { text: 'Clase', value: 'bus_category', sortable: false, },
+        { text: 'Precio Mínimo', value: 'price', sortable: false, },
+        { text: 'Empresa de Bus', value: 'company', sortable: false, },
       ],
 
   }),
 
   created() {
     this.initialize();
+    this.get_bus_travels();
+    this.get_price_history();
   },
 
   methods: {
@@ -148,13 +133,52 @@ export default {
           // let alert = response.data;
           // alert = this.bus_categories[alert[bus_category]];
           // this.alert = alert;
-          console.log(response.data)
           this.alert = response.data;
         })
         .catch(e => {
          console.log(e);
         });
     },
+
+    async get_bus_travels() {
+      return axios
+        .get("http://localhost:3000/api/alerts/"+this.$route.params.alert_id+"/bus_travels")
+        .then(response => {
+          let bus_travels = response.data.map(item => {
+          let temp = Object.assign({}, item);
+          temp.bus_category = this.bus_categories[item.bus_category].name;
+          temp.link = "https://demo.recorrido.cl/es/bus/" + this.alert.departure_city_url_name +
+           "/" + this.alert.destination_city_url_name + "/" + item.date
+          temp.green = item.price < this.alert.price;
+          return temp;
+          });
+          this.bus_travels = bus_travels;
+          this.loadTable = false;
+        })
+        .catch(e => {
+         console.log(e);
+        });
+    },
+
+    async get_price_history() {
+      return axios
+        .get("http://localhost:3000/api/alerts/"+this.$route.params.alert_id+"/price_history")
+        .then(response => {
+          this.price_history = response.data;
+        })
+        .catch(e => {
+         console.log(e);
+        });
+    },
+
+    goBack(){
+      this.$router.push({ path: '/'});
+    },
+
+    itemRowBackground(item) {
+     return item.green? 'style-1' : 'style-2'
+  }
+
   },
 }
 </script>
@@ -167,4 +191,10 @@ export default {
   /* .v-data-table {
     top: 400px;
   } */
+  .style-1 {
+    background-color: rgb(178, 224, 178);
+  }
+  .style-2 {
+    background-color: white;
+  }
 </style>
