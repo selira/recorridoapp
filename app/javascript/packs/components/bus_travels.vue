@@ -55,7 +55,7 @@
     :loading = "loadTable"
     loading-text="Loading... Please wait"
     :item-class="itemRowBackground"
-  >
+  > 
   <template #item.date="{ item }">
     <a target="_blank" :href="item.link">
       {{ item.date }}

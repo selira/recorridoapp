@@ -173,8 +173,9 @@ class Api::BusTravelsController < ApplicationController
       lowest_price = 999999.9
       travels_result.each do |tr|
         unless tr.empty?
-          if lowest_price > tr['price'].to_i
-            lowest_price = tr['price'].to_i
+          price = tr[:price] || tr['price'] #no entendí este bug sinceramente (tiraba nil con uno y otro, no ambos al mismo tiempo)
+          if lowest_price > price
+            lowest_price = price
           end
         end
       end
