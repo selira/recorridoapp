@@ -16,7 +16,15 @@ module Recorridoapp
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    config.time_zone = "Santiago"
+    config.after_initialize do
+      puts 'holi'
+      alerts = Alert.all
+      alerts.each do |a|
+        #AlertJob.set(wait: 5.seconds).perform_later({id: a.id.to_s}.to_json)
+        AlertJob.set(wait: 5.seconds).perform_later(a.id)
+      end
+    end
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end
