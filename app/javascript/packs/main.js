@@ -13,12 +13,10 @@ import VueRouter from 'vue-router'
 
 import alerts from "./components/alerts.vue";
 import bus_travels from "./components/bus_travels.vue";
-import mdiVue from 'mdi-vue/v2'
-import * as mdijs from '@mdi/js'
-Vue.use(mdiVue, {
-  icons: mdijs
-})
+import VueGoogleCharts from 'vue-google-charts'
 
+
+Vue.use(VueGoogleCharts)
 
 Vue.use(VueRouter)
 Vue.use(Vuetify)

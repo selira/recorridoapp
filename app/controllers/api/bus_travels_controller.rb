@@ -93,7 +93,8 @@ class Api::BusTravelsController < ApplicationController
     result = []
     p_history.each do |p|
       a = p.attributes
-      a['time'] = a['created_at'].strftime("%H:%M")
+      a['time'] = a['created_at'].strftime("%Y-%-m-%d-%H-%M").split("-").map{|s| s.to_i}
+      a['time'][1] -= 1 #google usa meses desde 0 :/ !?
       result.push(a)
     end
     render json: result.reverse

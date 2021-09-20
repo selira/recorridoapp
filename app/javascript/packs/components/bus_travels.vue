@@ -8,43 +8,11 @@
   <router-link to="/">
     <v-icon small class="mr-2" @click="goBack()">fa-arrow-left</v-icon>
   </router-link>
-  <v-card
-    class="mt-4 mx-auto"
-    max-width="400"
-  >
-    <v-sheet
-      class="v-sheet--offset mx-auto"
-      color="cyan"
-      elevation="12"
-      max-width="calc(100% - 32px)"
-    >
-      <v-sparkline
-        :labels="labels"
-        :value="value"
-        color="white"
-        line-width="2"
-        padding="16"
-      ></v-sparkline>
-    </v-sheet>
-
-    <v-card-text class="pt-0">
-      <div class="text-h6 font-weight-light mb-2">
-        User Registrations
-      </div>
-      <div class="subheading font-weight-light grey--text">
-        Last Campaign Performance
-      </div>
-      <v-divider class="my-2"></v-divider>
-      <v-icon
-        class="mr-2"
-        small
-      >
-        mdi-clock
-      </v-icon>
-      <span class="text-caption grey--text font-weight-light">last registration 26 minutes ago</span>
-    </v-card-text>
-  </v-card>
-  <template>
+  <GChart
+    type="LineChart"
+    :data="chartData"
+    :options="chartOptions"
+  />
   <v-data-table
     dense
     :headers="headers"
@@ -61,7 +29,6 @@
       {{ item.date }}
     </a>
   </template></v-data-table>
-</template>
 </div>
 </template>
 
@@ -79,6 +46,7 @@ export default {
     bus_travels: [],
     price_history: [],
     loadTable: true,
+    last_update: "",
     bus_categories: [
       {id: 0, name: 'Cualquiera'},
       {id: 1, name: 'Premium'},
@@ -87,22 +55,15 @@ export default {
       {id: 4, name: 'Pullman'},
     ],
 
-    labels: [
-      '12am',
-      '3am',
-      '6am',
-    ],
-
-    value: [
-      200,
-      675,
-      410,
-      390,
-      310,
-      460,
-      250,
-      240,
-    ],
+    chartData: [
+        ['Hora', 'Precio']
+      ],
+    chartOptions: {
+      chart: {
+        title: 'Historia de Precios',
+        subtitle: 'Fecha última consulta: ',
+      }
+    },
     headers: [
         {
           text: 'Fecha',
@@ -165,6 +126,7 @@ export default {
         .get("http://localhost:3000/api/alerts/"+this.$route.params.alert_id+"/price_history")
         .then(response => {
           this.price_history = response.data;
+          this.price_history.forEach(element => this.chartData.push([new Date(...element.time), element.price]));
         })
         .catch(e => {
          console.log(e);

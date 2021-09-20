@@ -9,12 +9,16 @@
 
 
 <script>
+import { GChart } from 'vue-google-charts'
 export default {
   data: function () {
     return {
       message: "Hello Vue!"
     }
   },
+  components: {
+    GChart
+  }
 }
 </script>
 
