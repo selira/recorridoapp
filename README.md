@@ -27,32 +27,16 @@ Para cargar la alerta y las llamadas a la API, hacer click en el ojo de la alert
 
 Se debiera cargar un ActiveJob por detrás que actualiza los precios y los pasajes cada 5 minutos. Estos también se reactivan cuando se carga Rails nuevamente.
 
-Cuando se edita una alerta, se puede tener que esperar a la nueva actualización para ver los datos nuevos. Tener ojo que pueden haber problemas de concurrencia si se edita mientras se está corriendo el ActiveJob (problema no resuelto).
+Cuando se edita una alerta, puede que se tenga que esperar a la nueva actualización para ver los datos nuevos. Tener ojo que pueden haber problemas de concurrencia si se edita mientras se está corriendo el ActiveJob (problema no resuelto).
 
-## Diseño
+## Diseño y Comportamiento
 
 Diagrama de Clases:
 
 ![alt text](https://github.com/selira/recorridoapp/blob/master/app/assets/images/UML.jpg?raw=true)
 
+Los bus_travels se modelaron para ser únicos para cada fecha y alerta juntos. Los price_histories corresponden a llamdas que se realizan cada 5 minutos a la API, y de los siete días se escoge el precio más barato que se guarda.
 
+En la tabla de alertas se puede hacer un CRUD básico de alertas.
 
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+En la vista de alerta se hace la llamada al SHOW de la Alerta, y también se hacen llamadas para cargar los bus_travel asociados y los price_histories asociados. Si es que es primera vez que se ve una alerta, antes se hace llamado al método update_bus_travels de la alerta, el cual hace los llamados a la API de recorrido, y también se setea un AlertJob que correrá en 5 minutos para volver a realizar el update (si el activeJob no es de una alerta eliminada, llama a un nuevo AlertJob en 5 minutos)
