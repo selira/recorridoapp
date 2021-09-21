@@ -25,7 +25,7 @@ Cuando se edita una alerta, se puede tener que esperar a la nueva actualización
 ## Diseño
 
 Diagrama de Clases:
-![alt text](https://github.com/selira/recorridoapp/blob/master/app/assets/UML.jpg?raw=true)
+![alt text](https://github.com/selira/recorridoapp/blob/master/app/assets/images/UML.jpg?raw=true)
 
 
 
