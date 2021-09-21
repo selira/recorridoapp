@@ -12,12 +12,12 @@ class Alert < ApplicationRecord
       #if changing cities, destroy everything
       self.bus_travels.destroy_all
       self.price_histories.destroy_all
-      self.update(last_update: nil)
+      #self.update(last_update: nil) #crea muchos workers, hay que esperar a la próxima actualización para ver
     end
     if saved_change_to_attribute?(:bus_category) && self.bus_category != 0
       #if changing to category not 0, destory bus_travels corresonding to other categories
       self.bus_travels.where.not(bus_category: self.bus_category).destroy_all
-      self.update(last_update: nil)
+      #self.update(last_update: nil) #crea muchos workers
     end
   end
 

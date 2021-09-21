@@ -64,12 +64,18 @@ export default {
     ],
 
     chartData: [
-        ['Hora', 'Precio']
+        ['Hora', 'Precio', 'Precio Objetivo']
       ],
     chartOptions: {
         title: 'Historia de Precios',
         subtitle: 'Fecha última consulta: ',
         height: 300,
+        interpolateNulls: true,
+        series: {
+          1: {
+          enableInteractivity: false
+          }
+        }
         // width: 1300
     },
     headers: [
@@ -121,8 +127,7 @@ export default {
           if (response.data.error) {
             this.loadTable = false;
             this.no_tickets = "No se pudieron encontrar tickets :("
-            this.
-            return
+            return;
           }
           let bus_travels = response.data.map(item => {
           let temp = Object.assign({}, item);
@@ -145,7 +150,24 @@ export default {
         .get("http://localhost:3000/api/alerts/"+this.$route.params.alert_id+"/price_history")
         .then(response => {
           this.price_history = response.data;
-          this.price_history.forEach(element => this.chartData.push([new Date(...element.time), element.price]));
+          this.price_history.forEach(element => this.chartData.push([new Date(...element.time), element.price, null]));
+          // adding price level line
+          if (this.price_history === undefined || this.price_history == 0) {
+            return;
+          }
+          if (this.price_history.length == 1){
+            //price line in first load
+            let hour_array = this.price_history[0].time;
+            let minutes = hour_array[4];
+            hour_array.splice(4, 1, minutes-1);
+            this.chartData.push([new Date(...hour_array), null , this.alert.price])
+            hour_array.splice(4, 1, minutes+1);
+            this.chartData.splice(1, 0, [new Date(...hour_array), null , this.alert.price]);
+            return
+          }
+          this.chartData.push([this.chartData.slice(-1)[0][0] , null , this.alert.price]);
+          this.chartData.splice(1, 0, [this.chartData[1][0], null , this.alert.price]);
+
         })
         .catch(e => {
          console.log(e);
