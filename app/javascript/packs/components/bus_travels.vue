@@ -1,18 +1,24 @@
 <template>
 <div>
-  <h1>{{alert.name}}</h1>
-  <h3>Origen: {{alert.departure_city_name}}</h3>
-  <h3>Destino: {{alert.destination_city_name}}</h3>
-  <h3>Precio: {{alert.price}}</h3>
-  <h3>Clase: {{bus_categories[alert.bus_category].name}}</h3>
-  <router-link to="/">
-    <v-icon small class="mr-2" @click="goBack()">fa-arrow-left</v-icon>
-  </router-link>
-  <GChart
-    type="LineChart"
-    :data="chartData"
-    :options="chartOptions"
-  />
+  <v-row style="margin-bottom: 50px;" justify='start'>
+    <v-col>
+      <h1>{{alert.name}}</h1>
+      <h3>Origen: {{alert.departure_city_name}}</h3>
+      <h3>Destino: {{alert.destination_city_name}}</h3>
+      <h3>Precio: {{alert.price}}</h3>
+      <h3>Clase: {{bus_categories[alert.bus_category].name}}</h3>
+      <router-link to="/">
+        <v-icon small class="mr-2" @click="goBack()">fa-arrow-left</v-icon>
+      </router-link>
+    </v-col>
+    <v-col>
+      <GChart
+        type="LineChart"
+        :data="chartData"
+        :options="chartOptions"
+      />
+    </v-col>
+  </v-row>
   <v-data-table
     dense
     :headers="headers"
@@ -21,7 +27,7 @@
     item-key="name"
     class="elevation-1"
     :loading = "loadTable"
-    loading-text="Loading... Please wait"
+    loading-text="Buscando tickets con los mejores precios!..."
     :item-class="itemRowBackground"
   > 
   <template v-slot:[`item.date`]="{ item }">
@@ -59,10 +65,10 @@ export default {
         ['Hora', 'Precio']
       ],
     chartOptions: {
-      chart: {
         title: 'Historia de Precios',
         subtitle: 'Fecha última consulta: ',
-      }
+        height: 300,
+        // width: 1300
     },
     headers: [
         {
@@ -110,6 +116,9 @@ export default {
       return axios
         .get("http://localhost:3000/api/alerts/"+this.$route.params.alert_id+"/bus_travels")
         .then(response => {
+          if (response.data === undefined || response.data == 0) {
+            this.loadTable = false;
+          }
           let bus_travels = response.data.map(item => {
           let temp = Object.assign({}, item);
           temp.bus_category = this.bus_categories[item.bus_category].name;

@@ -9,8 +9,15 @@ class Alert < ApplicationRecord
 
   def after_save_check
     if saved_change_to_attribute?(:departure_city_name) || saved_change_to_attribute?(:destination_city_name)
-      #delete everything?
-      puts 'holi'
+      #if changing cities, destroy everything
+      self.bus_travels.destroy_all
+      self.price_histories.destroy_all
+      self.update(last_update: nil)
+    end
+    if saved_change_to_attribute?(:bus_category) && self.bus_category != 0
+      #if changing to category not 0, destory bus_travels corresonding to other categories
+      self.bus_travels.where.not(bus_category: self.bus_category).destroy_all
+      self.update(last_update: nil)
     end
   end
 
