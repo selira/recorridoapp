@@ -18,11 +18,11 @@ module Recorridoapp
     #
     config.time_zone = "Santiago"
     config.after_initialize do
-      puts 'holi'
       alerts = Alert.all
       alerts.each do |a|
-        #AlertJob.set(wait: 5.seconds).perform_later({id: a.id.to_s}.to_json)
-        AlertJob.set(wait: 5.seconds).perform_later(a.id)
+        unless a.last_update.nil? #only execute if started before
+          AlertJob.set(wait: 5.seconds).perform_later(a.id)
+        end
       end
     end
     # config.eager_load_paths << Rails.root.join("extras")

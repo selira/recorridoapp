@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_09_19_185445) do
+ActiveRecord::Schema.define(version: 2021_09_20_211622) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 2021_09_19_185445) do
     t.integer "departure_city_id"
     t.string "destination_city_url_name"
     t.integer "destination_city_id"
+    t.datetime "last_update"
   end
 
   create_table "bus_travels", force: :cascade do |t|

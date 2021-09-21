@@ -1,17 +1,18 @@
 class Alert < ApplicationRecord
-  has_many :bus_travels
-  has_many :price_histories
+  has_many :bus_travels, :dependent => :delete_all
+  has_many :price_histories, :dependent => :delete_all
   #0: cualquiera, 1:premium, etc
   #enum bus_category: [:any, :premium, :salon_cama, :semi_cama, :pullman]
   after_save :after_save_check
 
   def after_save_check
     if saved_change_to_attribute?(:departure_city_name) || saved_change_to_attribute?(:destination_city_name)
+      #delete everything?
       puts 'holi'
     end
   end
 
-  def update
+  def update_bus_alerts
     #considerando que se hacen 7 request que se pueden demorar hasta 10 segundos o más,
     #este método puede tomar un tiempo largo
     #updates bus_travels from alert for next 7 days, and price history as well. Doesn't return anything
@@ -23,11 +24,18 @@ class Alert < ApplicationRecord
     if alert.nil?
       puts 'error: nil alert'
     end
+    #next block is to avoid n+1 queries, loading all the necessary bustravels beforehand
+    bus_travel_array = []
+    unless alert["last_update"].nil?
+      seven_days = get_next_seven_days()
+      bus_travel_array = BusTravel.where(date: seven_days, alert_id: alert_id)
+    end
     departure_city_id = alert[:departure_city_id]
     destination_city_id = alert[:destination_city_id]
     bus_category = alert[:bus_category]
     travels_result = []
     d = Date.today
+    #updating bus travels for the next seven days.
     (1..7).each do |n|
       #initial request
       response = bus_travels_request(departure_city_id, destination_city_id, d)
@@ -41,7 +49,8 @@ class Alert < ApplicationRecord
           res2 = data_fetch_request(search_id)
           if res2.status.success?
             bus_travel_data = res2.parse['outbound']['search_results']
-            travels_result.push(get_lowest_price(bus_travel_data, bus_category, d.strftime('%d-%m-%Y'), alert))
+            travels_result.push(get_lowest_price(bus_travel_data, bus_category, d.strftime('%d-%m-%Y'), 
+            alert, bus_travel_array))
           else
             puts res2
           end
@@ -53,7 +62,15 @@ class Alert < ApplicationRecord
       end
       d += 1
     end
+    #updating price history
     save_lowest_price(travels_result, alert_id)
+    #updating datetime of last update. Also a mark that alert has been updated (isn't new)
+    alert.last_update = DateTime.now
+    if alert.save
+      return 'saved!'
+    else
+      puts 'error saving alert after update'
+    end
 
   end
 
@@ -90,11 +107,12 @@ class Alert < ApplicationRecord
           .get(data_url)
     end
 
-    def get_lowest_price(bus_travel_data, bus_category, date, alert)
+    def get_lowest_price(bus_travel_data, bus_category, date, alert, bus_travel_array)
       #returns the bus_travel with lowest price of alert with date and bus_category
       #also saves the bus_travel to database
       lowest_price = 999999.9 #aqui asumimos que habran tickets con precios más bajos que esto jaja
-      bus_travel = alert.bus_travels.find_by(date: date)
+
+      bus_travel = bus_travel_array.select{|h| h["date"] == date}[0]
       bus_copy = bus_travel
       new_bus_travel_found = false
       if bus_travel.nil?
@@ -151,7 +169,9 @@ class Alert < ApplicationRecord
       d = Date.today
       (1..7).each do |n|
         result.push(d.strftime('%d-%m-%Y'))
+        d += 1
       end
+      return result
     end
 
 end

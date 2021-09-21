@@ -81,8 +81,7 @@ export default {
 
   created() {
     this.initialize();
-    this.get_bus_travels();
-    this.get_price_history();
+    this.getData();
   },
 
   methods: {
@@ -95,10 +94,16 @@ export default {
           // alert = this.bus_categories[alert[bus_category]];
           // this.alert = alert;
           this.alert = response.data;
+
         })
         .catch(e => {
          console.log(e);
         });
+    },
+
+    async getData() {
+      await this.get_bus_travels();
+      await this.get_price_history();
     },
 
     async get_bus_travels() {

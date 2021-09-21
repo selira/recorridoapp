@@ -60,23 +60,32 @@ class Api::BusTravelsController < ApplicationController
   def index
     #returns information from next 7 days
     alert_id = params[:alert_id]
-    alert = Alert.includes(:bus_travels).find_by(id: alert_id)
-    d = Date.today
-    bus_travels = []
-    (1..7).each do |n|
-      date_search = d.strftime('%d-%m-%Y')
-      bt = alert.bus_travels.find_by(date: date_search)
-      unless bt.nil?
-        bus_travels.push(bt.attributes)
+    alert = Alert.find_by(id: alert_id)
+    if alert.last_update.nil? #this should only be the first time index is called, when viewed for the first time
+      saved = alert.update_bus_alerts
+      if saved == 'saved!'
+        AlertJob.set(wait: 5.minutes).perform_later(alert_id) #immedatly starts alertjob loop, after first update
+      else
+        render json: {error: "error updating alert"}
       end
-      d += 1
     end
-    if bus_travels.empty?
-      #update with worker, not from this method
-      update(alert_id)
-      #render json: {info: 'tried to update info'}
+    
+    seven_days = get_next_seven_days()
+    bus_travel_array = BusTravel.where(date: seven_days, alert_id: alert_id).map{|a| a.attributes}
+    # d = Date.today
+    # bus_travels = []
+    # (1..7).each do |n|
+    #   date_search = d.strftime('%d-%m-%Y')
+    #   bt = alert.bus_travels.find_by(date: date_search)
+    #   unless bt.nil?
+    #     bus_travels.push(bt.attributes)
+    #   end
+    #   d += 1
+    # end
+    if bus_travel_array.empty?
+      render json: {error: "couldn't retrieve bus_travels"}
     else
-      render json: bus_travels
+      render json: bus_travel_array
     end
 
   end
@@ -187,6 +196,15 @@ class Api::BusTravelsController < ApplicationController
         unless pr.save
           puts 'error saving price history'
         end
+      end
+    end
+
+    def get_next_seven_days()
+      result = []
+      d = Date.today
+      (1..7).each do |n|
+        result.push(d.strftime('%d-%m-%Y'))
+        d += 1
       end
     end
 
