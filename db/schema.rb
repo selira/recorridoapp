@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_09_20_211622) do
+ActiveRecord::Schema.define(version: 2021_09_21_024309) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(version: 2021_09_20_211622) do
     t.bigint "alert_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["alert_id", "date"], name: "index_bus_travels_on_alert_id_and_date", unique: true
     t.index ["alert_id"], name: "index_bus_travels_on_alert_id"
     t.index ["date"], name: "index_bus_travels_on_date"
   end

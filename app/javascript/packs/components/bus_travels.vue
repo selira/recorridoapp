@@ -24,7 +24,7 @@
     loading-text="Loading... Please wait"
     :item-class="itemRowBackground"
   > 
-  <template #item.date="{ item }">
+  <template v-slot:[`item.date`]="{ item }">
     <a target="_blank" :href="item.link">
       {{ item.date }}
     </a>

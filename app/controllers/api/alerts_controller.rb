@@ -26,7 +26,7 @@ class Api::AlertsController < ApplicationController
     if @alert.save
       render json: { status: :ok, message: 'Success' }
     else
-      render json: { json: @alert.errors, status: :unprocessable_entity }
+      render json: @alert.errors, status: :unprocessable_entity
     end
   end
 

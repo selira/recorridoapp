@@ -1,6 +1,8 @@
 class Alert < ApplicationRecord
   has_many :bus_travels, :dependent => :delete_all
   has_many :price_histories, :dependent => :delete_all
+  validates_presence_of :departure_city_name
+  validates_presence_of :destination_city_name
   #0: cualquiera, 1:premium, etc
   #enum bus_category: [:any, :premium, :salon_cama, :semi_cama, :pullman]
   after_save :after_save_check
