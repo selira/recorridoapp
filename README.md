@@ -9,7 +9,7 @@ La aplicación usa Ruby (v 3.0.2) on Rails (v 6.1.4) y Vue.js(2.6), ambos ejecut
 
 ## Instalación (Ubuntu 20.04)
 
-Después de clonar el repositorio, se debe asegurar que exista un usuario de postgres con permisos de creación y edición sobre la base de datos que esté con las mismas credenciales que en config/database.yml ([Link que puede ser de ayuda](https://stackoverflow.com/a/10565632)).
+Después de clonar el repositorio, correr `yarn install` en la carpeta de rails, y `rails db:create`. Se debe asegurar que exista un usuario de postgres con permisos de creación y edición sobre la base de datos que esté con las mismas credenciales que en config/database.yml ([Link que puede ser de ayuda](https://stackoverflow.com/a/10565632)).
 
 Se debe instalar yarn, webpacker en caso de ser necesario.
 
