@@ -35,6 +35,7 @@
       {{ item.date }}
     </a>
   </template></v-data-table>
+  <h2>{{no_tickets}}</h2>
 </div>
 </template>
 
@@ -46,13 +47,14 @@ export default {
       name: "",
       departure_city: {},
       destination_city: {},
-      bus_category: {id: 0, name: 'Cualquiera'},
+      bus_category: 0,
       price: 0
     },
     bus_travels: [],
     price_history: [],
     loadTable: true,
     last_update: "",
+    no_tickets: "",
     bus_categories: [
       {id: 0, name: 'Cualquiera'},
       {id: 1, name: 'Premium'},
@@ -116,8 +118,11 @@ export default {
       return axios
         .get("http://localhost:3000/api/alerts/"+this.$route.params.alert_id+"/bus_travels")
         .then(response => {
-          if (response.data === undefined || response.data == 0) {
+          if (response.data.error) {
             this.loadTable = false;
+            this.no_tickets = "No se pudieron encontrar tickets :("
+            this.
+            return
           }
           let bus_travels = response.data.map(item => {
           let temp = Object.assign({}, item);

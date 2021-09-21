@@ -180,7 +180,6 @@ export default {
         })
         .then(response => {
           this.initialize();
-          console.log(response);
         })
         .catch(error => {
           console.log(error);
