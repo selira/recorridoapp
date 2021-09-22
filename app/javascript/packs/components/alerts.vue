@@ -55,9 +55,6 @@
       <v-icon small class="mr-2" @click="deleteItem(item)">delete</v-icon>
       <v-icon small @click="showBusTravel(item)">fa-eye</v-icon>
     </template>
-    <template v-slot:no-data>
-      <v-btn color="primary" @click="initialize">Reset</v-btn>
-    </template>
   </v-data-table>
 </template>
 

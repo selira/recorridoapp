@@ -1,7 +1,7 @@
 <template>
 <div>
   <v-row style="margin-bottom: 50px;" justify='start'>
-    <v-col>
+    <v-col style="margin-top: 20px; margin-left: 20px">
       <h1>{{alert.name}}</h1>
       <h3>Origen: {{alert.departure_city_name}}</h3>
       <h3>Destino: {{alert.destination_city_name}}</h3>
@@ -17,8 +17,10 @@
         :data="chartData"
         :options="chartOptions"
       />
+      <h3 style="text-align: right;">{{time_last_update}}</h3>
     </v-col>
   </v-row>
+
   <v-data-table
     dense
     :headers="headers"
@@ -55,6 +57,7 @@ export default {
     loadTable: true,
     last_update: "",
     no_tickets: "",
+    time_last_update: "Fecha Última Consulta: ",
     bus_categories: [
       {id: 0, name: 'Cualquiera'},
       {id: 1, name: 'Premium'},
@@ -108,6 +111,18 @@ export default {
           // alert = this.bus_categories[alert[bus_category]];
           // this.alert = alert;
           this.alert = response.data;
+          if (response.data.minutes !== null){
+            if(response.data.minutes == 0){
+              this.time_last_update = "Fecha Última Consulta: hace menos de un minuto."
+            }
+            else if (response.data.minutes == 1){
+              this.time_last_update = "Fecha Última Consulta: hace 1 minuto."
+            }
+            else {
+              this.time_last_update = "Fecha Última Consulta: hace " + response.data.minutes + " minutos."
+            }
+
+          }
 
         })
         .catch(e => {
@@ -118,6 +133,7 @@ export default {
     async getData() {
       await this.get_bus_travels();
       await this.get_price_history();
+      await this.initialize();
     },
 
     async get_bus_travels() {

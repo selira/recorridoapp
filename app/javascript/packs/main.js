@@ -28,7 +28,9 @@ const routes = [
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = new Vue({
-    vuetify: new Vuetify(),
+    vuetify: new Vuetify({icons: {
+      iconfont: 'mdiSvg' // 'mdi' || 'mdiSvg' || 'md' || 'fa' || 'fa4' || 'faSvg'
+    }}),
     router: new VueRouter({routes}),
     render: h => h(App)
   }).$mount()

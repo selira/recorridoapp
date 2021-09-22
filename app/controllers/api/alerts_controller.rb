@@ -10,7 +10,13 @@ class Api::AlertsController < ApplicationController
 
   def show
     @alert = Alert.find(params[:id])
-    render json: @alert
+    h = @alert.attributes
+    h['minutes'] = nil
+    unless @alert.last_update.nil?
+      minutes = DateTime.now - h["last_update"].to_datetime
+      h['minutes'] = (minutes*24*60).to_i
+    end
+    render json: h
   end
 
   def cities
